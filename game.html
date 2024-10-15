@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasure Hunt Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 10px;
+        }
+        .tile {
+            position: relative;
+            border: 2px solid #ccc;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 150px;
+            cursor: pointer;
+            border-radius: 15px;
+            background-image: url("/images/game-bg(1).jpg");
+        }
+        .tile.locked {
+            background-color: rgba(0, 0, 0, 0.1);
+            cursor: not-allowed;
+        }
+        .tile.locked::before {
+            content: '🔒';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+        }
+        .tile a {
+            padding: 10px 20px;
+            background-color: #000000;
+            border: none;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 15px;
+        }
+        .tile.unlocked {
+            background-color: #dff023;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Locked grid items with different questions -->
+        <div class="tile locked" id="tile1">Locked</div>
+        <div class="tile locked" id="tile2">Locked</div>
+        <div class="tile locked" id="tile3">Locked</div>
+
+        <div class="tile locked" id="tile4">Locked</div>
+        <div class="tile locked" id="tile5">Locked</div>
+        <div class="tile locked" id="tile6">Locked</div>
+
+        <div class="tile locked" id="tile7">Locked</div>
+        <div class="tile locked" id="tile8">Locked</div>
+        <div class="tile locked" id="tile9">Locked</div>
+
+        <div class="tile locked" id="tile10">Locked</div>
+        <div class="tile locked" id="tile11">Locked</div>
+        <div class="tile locked" id="tile12">Locked</div>
+    </div>
+
+    <script>
+        // Data for each tile, including the question, the correct key, and a link
+        const tileData = {
+            tile1: { question: "Though I’m not a glove, I cover you too, find me where the ground feels soft and new.", key: "socks", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
+            tile2: { question: "I bring words from afar, sealed and neat. Find me where two paths meet.", key: "letter", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
+            tile3: { question: "I’m crafted with care, from something quite plain. You’ll find me where there’s no fear of rain.", key: "cardboard", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
+            tile4: { question: "I test your brain, with pieces to frame. Find me where paths twist and do the same.", key: "puzzle", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
+            tile5: { question: "Tiny and round, with colors that gleam, I’m found where nature flows like a stream.", key: "beads", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
+            tile6: { question: "I’m small and sharp, for stitching I’m key. Look where folks gather, under the tree.", key: "needles", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
+            tile7: { question: "With loops and threads, I’m made with delight. Look for me where sunshine is bright.", key: "crochet", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
+            tile8: { question: "I’m a cuddly friend, soft and sweet. Look for me where joy and memories meet.", key: "teddy bear", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy85" },
+            tile9: { question: "With icy powers and a heart so bright, I’m known for my magic and a beautiful sight.", key: "elsa", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
+            tile10: { question: "I’m sweet and round, with candles on top. Look for me where celebrations never stop.", key: "cake", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
+            tile11: { question: "I’m a delightful dish, fresh and neat. Look for me where cultures and flavors meet.", key: "sushi", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy85" },
+            tile12: { question: "Crafted with care, unique and fine, I hold your treasures, both yours and mine.", key: "okhtein", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" }
+        };
+
+        // Function to unlock the tile and show the link
+        function unlockTile(tileId) {
+            const tileInfo = tileData[tileId];
+            const userAnswer = prompt(tileInfo.question);
+            
+            if (userAnswer && userAnswer.toLowerCase() === tileInfo.key) {
+                const tile = document.getElementById(tileId);
+                tile.classList.remove('locked');
+                tile.classList.add('unlocked');
+                tile.innerHTML = `<a href="${tileInfo.link}" target="_blank">Go to Present</a>`; // Display the link
+            } else {
+                alert("Wrong answer! Try again.");
+            }
+        }
+
+        // Attach event listeners to all locked tiles
+        document.querySelectorAll('.locked').forEach(tile => {
+            tile.addEventListener('click', function() {
+                const tileId = this.id;
+                unlockTile(tileId);
+            });
+        });
+    </script>
+</body>
+</html>
