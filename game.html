@@ -93,27 +93,33 @@
         };
 
         // Function to unlock the tile and show the link
+        // Function to unlock the tile and show the link
         function unlockTile(tileId) {
             const tileInfo = tileData[tileId];
             const userAnswer = prompt(tileInfo.question);
-            
-            if (userAnswer && userAnswer.toLowerCase() === tileInfo.key) {
-                const tile = document.getElementById(tileId);
-                tile.classList.remove('locked');
-                tile.classList.add('unlocked');
-                tile.innerHTML = `<a href="${tileInfo.link}" target="_blank">Go to Present</a>`; // Display the link
-            } else {
-                alert("Wrong answer! Try again.");
-            }
-        }
 
-        // Attach event listeners to all locked tiles
-        document.querySelectorAll('.locked').forEach(tile => {
-            tile.addEventListener('click', function() {
-                const tileId = this.id;
-                unlockTile(tileId);
-            });
-        });
+            if (userAnswer && userAnswer.toLowerCase() === tileInfo.key) {
+            const tile = document.getElementById(tileId);
+            tile.classList.remove('locked');
+            tile.classList.add('unlocked');
+            tile.innerHTML = `<a href="${tileInfo.link}" target="_blank">Go to Present</a>`; // Display the link
+            tile.removeEventListener('click', clickHandler); // Remove the event listener to prevent re-prompting
+        } else {
+            alert("Wrong answer! Try again.");
+        }
+    }
+
+// Event handler function to be removed once the tile is unlocked
+    function clickHandler() {
+        const tileId = this.id;
+        unlockTile(tileId);
+    }
+
+// Attach event listeners to all locked tiles
+    document.querySelectorAll('.locked').forEach(tile => {
+    tile.addEventListener('click', clickHandler);
+});
+
     </script>
 </body>
 </html>
