@@ -5,121 +5,610 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Treasure Hunt Game</title>
     <style>
+        :root {
+            --primary: #ffd700;
+            --secondary: #6a3805;
+            --background: #1a1a2e;
+            --tile-bg: #0f3460;
+            --success: #28a745;
+            --error: #dc3545;
+            --text: #e1e1e1;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #000000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
             margin: 0;
             padding: 0;
+            background-image: url('https://cdnjs.cloudflare.com/ajax/libs/simple-icons/3.0.1/simple-icons.svg');
+            background-repeat: repeat;
+            background-size: 200px;
+            background-blend-mode: soft-light;
+            min-height: 100vh;
         }
+        
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            color: var(--primary);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        
         .container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto 50px;
+            padding: 20px;
         }
+        
         .tile {
             position: relative;
-            border: 2px solid #ccc;
+            border: 2px solid var(--primary);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 150px;
             cursor: pointer;
             border-radius: 15px;
-            background-image: url("/images/game-bg(1).jpg");
+            background-color: var(--tile-bg);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
+        
+        .tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            border-color: var(--primary);
+        }
+        
         .tile.locked {
-            background-color: rgba(0, 0, 0, 0.1);
-            cursor: not-allowed;
+            background-image: radial-gradient(circle at center, rgba(255, 215, 0, 0.1), transparent);
         }
+        
         .tile.locked::before {
             content: '🔒';
             position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 20px;
+            font-size: 30px;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
         }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .tile span {
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .tile.unlocked {
+            background-color: rgba(40, 167, 69, 0.3);
+            border-color: var(--success);
+        }
+        
         .tile a {
-            padding: 10px 20px;
-            background-color: #000000;
-            border: none;
-            color: white;
+            padding: 12px 25px;
+            background-color: var(--secondary);
+            color: var(--primary);
             text-decoration: none;
             font-size: 16px;
-            border-radius: 15px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: 2px solid var(--primary);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
-        .tile.unlocked {
-            background-color: #dff023;
+        
+        .tile a:hover {
+            background-color: var(--primary);
+            color: var(--secondary);
+            transform: scale(1.05);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: auto;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: var(--tile-bg);
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin: 0;
+        }
+        
+        .close-button {
+            color: var(--text);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .close-button:hover {
+            color: var(--primary);
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .riddle {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .answer-input {
+            width: calc(100% - 24px); /* Adjusted to account for padding */
+            padding: 12px;
+            font-size: 1rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            margin-bottom: 15px;
+            outline: none;
+            box-sizing: border-box;
+        }
+        
+        .answer-input:focus {
+            box-shadow: 0 0 8px var(--primary);
+        }
+        
+        .submit-answer {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            background-color: var(--secondary);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .submit-answer:hover {
+            background-color: var(--primary);
+            color: var(--secondary);
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .error-feedback {
+            background-color: rgba(220, 53, 69, 0.2);
+            border: 1px solid var(--error);
+            color: #ff6b6b;
+        }
+        
+        .success-feedback {
+            background-color: rgba(40, 167, 69, 0.2);
+            border: 1px solid var(--success);
+            color: #7aeb9e;
+        }
+        
+        .progress-container {
+            text-align: center;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            margin: 0 auto 20px;
+            max-width: 800px;
+        }
+        
+        .progress-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .progress-text {
+            color: var(--text);
+            font-weight: bold;
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .tile {
+                height: 120px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>Treasure Hunt Adventure</h1>
+    </div>
+    
+    <div class="progress-container">
+        <div class="progress-title">Your Progress</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text">
+            Treasures found: <span id="treasuresFound">0</span> / <span id="totalTreasures">12</span>
+        </div>
+    </div>
+    
     <div class="container">
-        <!-- Locked grid items with different questions -->
-        <div class="tile locked" id="tile1">Locked</div>
-        <div class="tile locked" id="tile2">Locked</div>
-        <div class="tile locked" id="tile3">Locked</div>
-
-        <div class="tile locked" id="tile4">Locked</div>
-        <div class="tile locked" id="tile5">Locked</div>
-        <div class="tile locked" id="tile6">Locked</div>
-
-        <div class="tile locked" id="tile7">Locked</div>
-        <div class="tile locked" id="tile8">Locked</div>
-        <div class="tile locked" id="tile9">Locked</div>
-
-        <div class="tile locked" id="tile10">Locked</div>
-        <div class="tile locked" id="tile11">Locked</div>
-        <div class="tile locked" id="tile12">Locked</div>
+        <!-- Tiles will be generated by JavaScript -->
+    </div>
+    
+    <div class="modal" id="riddleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Solve the Riddle</h2>
+                <span class="close-button" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="riddle" id="riddleText"></p>
+                <input type="text" class="answer-input" id="answerInput" placeholder="Enter your answer...">
+                <div class="feedback error-feedback" id="errorFeedback">Wrong answer! Try again.</div>
+                <div class="feedback success-feedback" id="successFeedback">Correct! Unlocking treasure...</div>
+                <button class="submit-answer" id="submitAnswer">Submit Answer</button>
+            </div>
+        </div>
     </div>
 
     <script>
         // Data for each tile, including the question, the correct key, and a link
         const tileData = {
-            tile1: { question: "Though I’m not a glove, I cover you too, find me where the ground feels soft and new.", key: "socks", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
-            tile2: { question: "I bring words from afar, sealed and neat. Find me where two paths meet.", key: "letter", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
-            tile3: { question: "I’m crafted with care, from something quite plain. You’ll find me where there’s no fear of rain.", key: "cardboard", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
-            tile4: { question: "I test your brain, with pieces to frame. Find me where paths twist and do the same.", key: "puzzle", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
-            tile5: { question: "Tiny and round, with colors that gleam, I’m found where nature flows like a stream.", key: "beads", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
-            tile6: { question: "I’m small and sharp, for stitching I’m key. Look where folks gather, under the tree.", key: "needles", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
-            tile7: { question: "With loops and threads, I’m made with delight. Look for me where sunshine is bright.", key: "crochet", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
-            tile8: { question: "I’m a cuddly friend, soft and sweet. Look for me where joy and memories meet.", key: "teddy bear", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy85" },
-            tile9: { question: "With icy powers and a heart so bright, I’m known for my magic and a beautiful sight.", key: "elsa", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
-            tile10: { question: "I’m sweet and round, with candles on top. Look for me where celebrations never stop.", key: "cake", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" },
-            tile11: { question: "I’m a delightful dish, fresh and neat. Look for me where cultures and flavors meet.", key: "sushi", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy85" },
-            tile12: { question: "Crafted with care, unique and fine, I hold your treasures, both yours and mine.", key: "okhtein", link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8" }
+            tile1: { 
+                question: "Though I'm not a glove, I cover you too, find me where the ground feels soft and new.", 
+                key: "socks", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "🧦"
+            },
+            tile2: { 
+                question: "I bring words from afar, sealed and neat. Find me where two paths meet.", 
+                key: "letter", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "✉️"
+            },
+            tile3: { 
+                question: "I'm crafted with care, from something quite plain. You'll find me where there's no fear of rain.", 
+                key: "cardboard", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "📦"
+            },
+            tile4: { 
+                question: "I test your brain, with pieces to frame. Find me where paths twist and do the same.", 
+                key: "puzzle", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "🧩"
+            },
+            tile5: { 
+                question: "Tiny and round, with colors that gleam, I'm found where nature flows like a stream.", 
+                key: "beads", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "💎"
+            },
+            tile6: { 
+                question: "I'm small and sharp, for stitching I'm key. Look where folks gather, under the tree.", 
+                key: "needles", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "🪡"
+            },
+            tile7: { 
+                question: "With loops and threads, I'm made with delight. Look for me where sunshine is bright.", 
+                key: "crochet", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "🧶"
+            },
+            tile8: { 
+                question: "I'm a cuddly friend, soft and sweet. Look for me where joy and memories meet.", 
+                key: "teddy bear", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy85",
+                icon: "🧸"
+            },
+            tile9: { 
+                question: "With icy powers and a heart so bright, I'm known for my magic and a beautiful sight.", 
+                key: "elsa", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "❄️"
+            },
+            tile10: { 
+                question: "I'm sweet and round, with candles on top. Look for me where celebrations never stop.", 
+                key: "cake", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "🎂"
+            },
+            tile11: { 
+                question: "I'm a delightful dish, fresh and neat. Look for me where cultures and flavors meet.", 
+                key: "sushi", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy85",
+                icon: "🍣"
+            },
+            tile12: { 
+                question: "Crafted with care, unique and fine, I hold your treasures, both yours and mine.", 
+                key: "okhtein", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "👜"
+            }
         };
 
-        // Function to unlock the tile and show the link
-        // Function to unlock the tile and show the link
+        // DOM elements
+        const container = document.querySelector('.container');
+        const modal = document.getElementById('riddleModal');
+        const closeModal = document.getElementById('closeModal');
+        const riddleText = document.getElementById('riddleText');
+        const answerInput = document.getElementById('answerInput');
+        const submitAnswer = document.getElementById('submitAnswer');
+        const errorFeedback = document.getElementById('errorFeedback');
+        const successFeedback = document.getElementById('successFeedback');
+        const progressFill = document.getElementById('progressFill');
+        const treasuresFound = document.getElementById('treasuresFound');
+        const totalTreasures = document.getElementById('totalTreasures');
+        
+        let currentTileId = null;
+        let unlockedCount = 0;
+        
+        // Generate tiles
+        function generateTiles() {
+            // Clear container
+            container.innerHTML = '';
+            unlockedCount = 0;
+            
+            // Create tiles
+            Object.keys(tileData).forEach(tileId => {
+                const tile = document.createElement('div');
+                tile.className = 'tile locked';
+                tile.id = tileId;
+                
+                // Check if tile is already unlocked in localStorage
+                const isUnlocked = localStorage.getItem(`treasure_${tileId}`) === 'unlocked';
+                
+                if (isUnlocked) {
+                    tile.classList.remove('locked');
+                    tile.classList.add('unlocked');
+                    tile.innerHTML = `<a href="${tileData[tileId].link}" target="_blank">
+                        <span>${tileData[tileId].icon} Find Gift</span>
+                    </a>`;
+                    unlockedCount++;
+                } else {
+                    tile.innerHTML = `<span>Locked</span>`;
+                    // Create a closure for the event handler
+                    const clickHandler = function() {
+                        openRiddleModal(tileId);
+                    };
+                    tile.addEventListener('click', clickHandler);
+                }
+                
+                container.appendChild(tile);
+            });
+            
+            // Update progress
+            updateProgress();
+        }
+        
+        // Open the riddle modal
+        function openRiddleModal(tileId) {
+            currentTileId = tileId;
+            riddleText.textContent = tileData[tileId].question;
+            answerInput.value = '';
+            errorFeedback.style.display = 'none';
+            successFeedback.style.display = 'none';
+            modal.style.display = 'flex';
+            answerInput.focus();
+        }
+        
+        // Close the modal
+        function closeRiddleModal() {
+            modal.style.display = 'none';
+            currentTileId = null;
+        }
+        
+        // Check the answer
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const correctAnswer = tileData[currentTileId].key.toLowerCase();
+            
+            if (userAnswer === correctAnswer) {
+                // Show success feedback
+                successFeedback.style.display = 'block';
+                errorFeedback.style.display = 'none';
+                
+                // Unlock the tile after a short delay
+                setTimeout(() => {
+                    unlockTile(currentTileId);
+                    closeRiddleModal();
+                }, 1500);
+            } else {
+                // Show error feedback
+                errorFeedback.style.display = 'block';
+                successFeedback.style.display = 'none';
+                
+                // Shake the input
+                answerInput.classList.add('shake');
+                setTimeout(() => {
+                    answerInput.classList.remove('shake');
+                }, 500);
+            }
+        }
+        
+        // Unlock a tile
         function unlockTile(tileId) {
-            const tileInfo = tileData[tileId];
-            const userAnswer = prompt(tileInfo.question);
-
-            if (userAnswer && userAnswer.toLowerCase() === tileInfo.key) {
             const tile = document.getElementById(tileId);
             tile.classList.remove('locked');
             tile.classList.add('unlocked');
-            tile.innerHTML = `<a href="${tileInfo.link}" target="_blank">Go to Present</a>`; // Display the link
-            tile.removeEventListener('click', clickHandler); // Remove the event listener to prevent re-prompting
-        } else {
-            alert("Wrong answer! Try again.");
+            
+            // Update the tile content
+            tile.innerHTML = `<a href="${tileData[tileId].link}" target="_blank">
+                <span>${tileData[tileId].icon} Find Gift</span>
+            </a>`;
+            
+            // Remove the click event listener by cloning and replacing
+            const newTile = tile.cloneNode(true);
+            tile.parentNode.replaceChild(newTile, tile);
+            
+            // Save the unlocked state to localStorage with a unique prefix
+            localStorage.setItem(`treasure_${tileId}`, 'unlocked');
+            
+            // Update progress
+            unlockedCount++;
+            updateProgress();
         }
-    }
-
-// Event handler function to be removed once the tile is unlocked
-    function clickHandler() {
-        const tileId = this.id;
-        unlockTile(tileId);
-    }
-
-// Attach event listeners to all locked tiles
-    document.querySelectorAll('.locked').forEach(tile => {
-    tile.addEventListener('click', clickHandler);
-});
-
+        
+        // Update progress bar and count
+        function updateProgress() {
+            const percentage = (unlockedCount / Object.keys(tileData).length) * 100;
+            progressFill.style.width = `${percentage}%`;
+            treasuresFound.textContent = unlockedCount;
+            totalTreasures.textContent = Object.keys(tileData).length;
+        }
+        
+        // Event listeners
+        closeModal.addEventListener('click', closeRiddleModal);
+        submitAnswer.addEventListener('click', checkAnswer);
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeRiddleModal();
+            }
+        });
+        
+        // Listen for Enter key in answer input
+        answerInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+        
+        // Initialize the game
+        generateTiles();
+        
+        // Add reset button for development purposes (can be removed for production)
+        const resetButton = document.createElement('button');
+        resetButton.textContent = 'Reset Game';
+        resetButton.style.position = 'fixed';
+        resetButton.style.bottom = '10px';
+        resetButton.style.right = '10px';
+        resetButton.style.padding = '8px 15px';
+        resetButton.style.backgroundColor = '#dc3545';
+        resetButton.style.color = 'white';
+        resetButton.style.border = 'none';
+        resetButton.style.borderRadius = '5px';
+        resetButton.style.cursor = 'pointer';
+        
+        resetButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all progress?')) {
+                Object.keys(tileData).forEach(tileId => {
+                    localStorage.removeItem(`treasure_${tileId}`);
+                });
+                unlockedCount = 0;
+                generateTiles();
+            }
+        });
+        
+        document.body.appendChild(resetButton);
     </script>
 </body>
 </html>
