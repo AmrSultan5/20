@@ -325,6 +325,76 @@
             font-weight: bold;
         }
         
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--primary);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .congratulations-modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: auto;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary);
+            animation: confetti-fall 5s linear infinite;
+        }
+        
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+        
+        .celebration-text {
+            font-size: 2rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        .completion-time {
+            font-size: 1.2rem;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
         .shake {
             animation: shake 0.5s;
         }
@@ -356,6 +426,10 @@
     </style>
 </head>
 <body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
     <div class="header">
         <h1>Treasure Hunt Adventure</h1>
     </div>
@@ -393,6 +467,22 @@
             </div>
         </div>
     </div>
+
+    <div class="congratulations-modal" id="congratulationsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Congratulations! 🎉</h2>
+            </div>
+            <div class="modal-body">
+                <div class="celebration-text">You've found all the treasures!</div>
+                <button class="submit-answer" onclick="location.reload()">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2579/2579-preview.mp3" preload="auto"></audio>
+    <audio id="errorSound" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3" preload="auto"></audio>
+    <audio id="unlockSound" src="https://assets.mixkit.co/active_storage/sfx/2577/2577-preview.mp3" preload="auto"></audio>
 
     <script>
         // Data for each tile, including the question, the correct key, a link, and a hint
@@ -483,9 +573,50 @@
         const totalTreasures = document.getElementById('totalTreasures');
         const hintButton = document.getElementById('hintButton');
         const hintText = document.getElementById('hintText');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const congratulationsModal = document.getElementById('congratulationsModal');
+        
+        // Audio elements
+        const successSound = document.getElementById('successSound');
+        const errorSound = document.getElementById('errorSound');
+        const unlockSound = document.getElementById('unlockSound');
         
         let currentTileId = null;
         let unlockedCount = 0;
+        
+        // Initialize the game
+        function initGame() {
+            // Show loading overlay
+            loadingOverlay.style.display = 'flex';
+            
+            // Simulate loading time
+            setTimeout(() => {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            }, 1500);
+            
+            generateTiles();
+        }
+        
+        // Create confetti effect
+        function createConfetti() {
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.animationDelay = Math.random() * 5 + 's';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                document.body.appendChild(confetti);
+            }
+        }
+        
+        // Show congratulations modal
+        function showCongratulations() {
+            createConfetti();
+            congratulationsModal.style.display = 'flex';
+        }
         
         // Generate tiles
         function generateTiles() {
@@ -555,27 +686,30 @@
             }
         }
         
-        // Check the answer
+        // Modified checkAnswer function
         function checkAnswer() {
             const userAnswer = answerInput.value.trim().toLowerCase();
             const correctAnswer = tileData[currentTileId].key.toLowerCase();
             
             if (userAnswer === correctAnswer) {
-                // Show success feedback
+                successSound.play();
                 successFeedback.style.display = 'block';
                 errorFeedback.style.display = 'none';
                 
-                // Unlock the tile after a short delay
                 setTimeout(() => {
+                    unlockSound.play();
                     unlockTile(currentTileId);
                     closeRiddleModal();
+                    
+                    if (unlockedCount === Object.keys(tileData).length) {
+                        showCongratulations();
+                    }
                 }, 1500);
             } else {
-                // Show error feedback
+                errorSound.play();
                 errorFeedback.style.display = 'block';
                 successFeedback.style.display = 'none';
                 
-                // Shake the input
                 answerInput.classList.add('shake');
                 setTimeout(() => {
                     answerInput.classList.remove('shake');
@@ -606,7 +740,7 @@
             updateProgress();
         }
         
-        // Update progress bar and count
+        // Modified updateProgress function
         function updateProgress() {
             const percentage = (unlockedCount / Object.keys(tileData).length) * 100;
             progressFill.style.width = `${percentage}%`;
@@ -634,7 +768,7 @@
         });
         
         // Initialize the game
-        generateTiles();
+        initGame();
         
         // Add reset button for development purposes (can be removed for production)
         const resetButton = document.createElement('button');
