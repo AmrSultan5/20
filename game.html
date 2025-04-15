@@ -13,6 +13,7 @@
             --success: #28a745;
             --error: #dc3545;
             --text: #e1e1e1;
+            --hint: #17a2b8;
         }
         
         body {
@@ -200,8 +201,40 @@
             line-height: 1.6;
         }
         
+        .hint-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .hint-button {
+            background-color: var(--hint);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .hint-button:hover {
+            background-color: #138496;
+            transform: scale(1.05);
+        }
+        
+        .hint-text {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: rgba(23, 162, 184, 0.2);
+            border: 1px solid var(--hint);
+            border-radius: 8px;
+            display: none;
+            font-style: italic;
+            animation: fadeIn 0.5s;
+        }
+        
         .answer-input {
-            width: calc(100% - 24px); /* Adjusted to account for padding */
+            width: calc(100% - 24px);
             padding: 12px;
             font-size: 1rem;
             border: 2px solid var(--primary);
@@ -349,6 +382,10 @@
             </div>
             <div class="modal-body">
                 <p class="riddle" id="riddleText"></p>
+                <div class="hint-container">
+                    <button class="hint-button" id="hintButton">Need a Hint? 💡</button>
+                    <p class="hint-text" id="hintText"></p>
+                </div>
                 <input type="text" class="answer-input" id="answerInput" placeholder="Enter your answer...">
                 <div class="feedback error-feedback" id="errorFeedback">Wrong answer! Try again.</div>
                 <div class="feedback success-feedback" id="successFeedback">Correct! Unlocking treasure...</div>
@@ -358,79 +395,77 @@
     </div>
 
     <script>
-        // Data for each tile, including the question, the correct key, and a link
+        // Data for each tile, including the question, the correct key, a link, and a hint
         const tileData = {
             tile1: { 
                 question: "Though I'm not a glove, I cover you too, find me where the ground feels soft and new.", 
                 key: "socks", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "🧦"
+                icon: "🧦",
+                hint: "I warm your feet and come in pairs."
             },
             tile2: { 
                 question: "I bring words from afar, sealed and neat. Find me where two paths meet.", 
                 key: "letter", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "✉️"
+                icon: "✉️",
+                hint: "I'm delivered by someone in uniform and might contain personal messages."
             },
             tile3: { 
-                question: "I'm crafted with care, from something quite plain. You'll find me where there's no fear of rain.", 
-                key: "cardboard", 
+                question: "With needle and thread, I mend and repair, bringing together what was once a tear.", 
+                key: "suturing", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "📦"
+                icon: "🪡",
+                hint: "This is a medical skill, similar to sewing a wound closed."
             },
             tile4: { 
                 question: "I test your brain, with pieces to frame. Find me where paths twist and do the same.", 
                 key: "puzzle", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "🧩"
+                icon: "🧩",
+                hint: "I come in different shapes and sizes, with pieces that fit together to form a complete picture."
             },
             tile5: { 
-                question: "Tiny and round, with colors that gleam, I'm found where nature flows like a stream.", 
-                key: "beads", 
-                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "💎"
-            },
-            tile6: { 
                 question: "I'm small and sharp, for stitching I'm key. Look where folks gather, under the tree.", 
-                key: "needles", 
-                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "🪡"
-            },
-            tile7: { 
-                question: "With loops and threads, I'm made with delight. Look for me where sunshine is bright.", 
                 key: "crochet", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "🧶"
+                icon: "🪡",
+                hint: "This is a craft using yarn and a hooked needle to create patterns."
             },
-            tile8: { 
+            tile6: { 
                 question: "I'm a cuddly friend, soft and sweet. Look for me where joy and memories meet.", 
                 key: "teddy bear", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy85",
-                icon: "🧸"
+                icon: "🧸",
+                hint: "I'm a stuffed toy that children often cuddle with at bedtime."
             },
-            tile9: { 
-                question: "With icy powers and a heart so bright, I'm known for my magic and a beautiful sight.", 
-                key: "elsa", 
-                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "❄️"
-            },
-            tile10: { 
-                question: "I'm sweet and round, with candles on top. Look for me where celebrations never stop.", 
-                key: "cake", 
-                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "🎂"
-            },
-            tile11: { 
+            tile7: { 
                 question: "I'm a delightful dish, fresh and neat. Look for me where cultures and flavors meet.", 
                 key: "sushi", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy85",
-                icon: "🍣"
+                icon: "🍣",
+                hint: "I'm a Japanese dish often made with rice, seaweed, and raw fish."
             },
-            tile12: { 
-                question: "Crafted with care, unique and fine, I hold your treasures, both yours and mine.", 
-                key: "okhtein", 
+            tile8: { 
+                question: "I'm sweet and round, with candles on top. Look for me where celebrations never stop.", 
+                key: "cake", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "👜"
+                icon: "🎂",
+                hint: "You might make a wish before blowing out candles on me during your birthday."
+            },
+            tile9: { 
+                question: "I'm small but mighty, storing your world inside. Plug me in and I'll be your digital guide.", 
+                key: "flash drive", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "💾",
+                hint: "I connect to your computer through USB and can store your files."
+            },
+            tile10: { 
+                question: "I capture moments, both near and far, with a click and a flash, like a shooting star.", 
+                key: "camera", 
+                link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
+                icon: "📸",
+                hint: "I take pictures that help preserve your memories."
             }
         };
 
@@ -446,6 +481,8 @@
         const progressFill = document.getElementById('progressFill');
         const treasuresFound = document.getElementById('treasuresFound');
         const totalTreasures = document.getElementById('totalTreasures');
+        const hintButton = document.getElementById('hintButton');
+        const hintText = document.getElementById('hintText');
         
         let currentTileId = null;
         let unlockedCount = 0;
@@ -495,6 +532,8 @@
             answerInput.value = '';
             errorFeedback.style.display = 'none';
             successFeedback.style.display = 'none';
+            hintText.style.display = 'none';
+            hintText.textContent = tileData[tileId].hint;
             modal.style.display = 'flex';
             answerInput.focus();
         }
@@ -503,6 +542,17 @@
         function closeRiddleModal() {
             modal.style.display = 'none';
             currentTileId = null;
+        }
+        
+        // Show/hide hint
+        function toggleHint() {
+            if (hintText.style.display === 'none' || hintText.style.display === '') {
+                hintText.style.display = 'block';
+                hintButton.textContent = 'Hide Hint';
+            } else {
+                hintText.style.display = 'none';
+                hintButton.textContent = 'Need a Hint? 💡';
+            }
         }
         
         // Check the answer
@@ -567,6 +617,7 @@
         // Event listeners
         closeModal.addEventListener('click', closeRiddleModal);
         submitAnswer.addEventListener('click', checkAnswer);
+        hintButton.addEventListener('click', toggleHint);
         
         // Close modal when clicking outside
         window.addEventListener('click', (event) => {
