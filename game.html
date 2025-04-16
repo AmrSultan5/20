@@ -468,21 +468,22 @@
         </div>
     </div>
 
+    <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2579/2579-preview.mp3" preload="auto"></audio>
+    <audio id="errorSound" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3" preload="auto"></audio>
+    <audio id="unlockSound" src="https://assets.mixkit.co/active_storage/sfx/2577/2577-preview.mp3" preload="auto"></audio>
+    <audio id="completionSound" src="https://assets.mixkit.co/active_storage/sfx/2576/2576-preview.mp3" preload="auto"></audio>
+
     <div class="congratulations-modal" id="congratulationsModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Congratulations! 🎉</h2>
+                <span class="close-button" id="closeCongratulations">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="celebration-text">You've found all the treasures!</div>
-                <button class="submit-answer" onclick="location.reload()">Play Again</button>
             </div>
         </div>
     </div>
-
-    <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2579/2579-preview.mp3" preload="auto"></audio>
-    <audio id="errorSound" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3" preload="auto"></audio>
-    <audio id="unlockSound" src="https://assets.mixkit.co/active_storage/sfx/2577/2577-preview.mp3" preload="auto"></audio>
 
     <script>
         // Data for each tile, including the question, the correct key, a link, and a hint
@@ -545,17 +546,17 @@
             },
             tile9: { 
                 question: "I'm small but mighty, storing your world inside. Plug me in and I'll be your digital guide.", 
-                key: "flash drive", 
+                key: "usb drive", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
                 icon: "💾",
                 hint: "I connect to your computer through USB and can store your files."
             },
             tile10: { 
-                question: "I capture moments, both near and far, with a click and a flash, like a shooting star.", 
-                key: "camera", 
+                question: "It is a mystery :)", 
+                key: "", 
                 link: "https://maps.app.goo.gl/j7Z7qbSVfFGKWNoy8",
-                icon: "📸",
-                hint: "I take pictures that help preserve your memories."
+                icon: "",
+                hint: "No hint needed :)"
             }
         };
 
@@ -575,11 +576,13 @@
         const hintText = document.getElementById('hintText');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const congratulationsModal = document.getElementById('congratulationsModal');
+        const closeCongratulations = document.getElementById('closeCongratulations');
         
         // Audio elements
         const successSound = document.getElementById('successSound');
         const errorSound = document.getElementById('errorSound');
         const unlockSound = document.getElementById('unlockSound');
+        const completionSound = document.getElementById('completionSound');
         
         let currentTileId = null;
         let unlockedCount = 0;
@@ -612,8 +615,14 @@
             }
         }
         
+        // Close congratulations modal
+        function closeCongratulationsModal() {
+            congratulationsModal.style.display = 'none';
+        }
+        
         // Show congratulations modal
         function showCongratulations() {
+            completionSound.play();
             createConfetti();
             congratulationsModal.style.display = 'flex';
         }
@@ -752,11 +761,15 @@
         closeModal.addEventListener('click', closeRiddleModal);
         submitAnswer.addEventListener('click', checkAnswer);
         hintButton.addEventListener('click', toggleHint);
+        closeCongratulations.addEventListener('click', closeCongratulationsModal);
         
         // Close modal when clicking outside
         window.addEventListener('click', (event) => {
             if (event.target === modal) {
                 closeRiddleModal();
+            }
+            if (event.target === congratulationsModal) {
+                closeCongratulationsModal();
             }
         });
         
